@@ -22,5 +22,10 @@ pip install torchvision==0.2.2
 ldd $PYTORCH_BIN
 ```
 若libcudart.so.10.1链接到gpgpu-sim中的libcudart.so.10.1，说明pytorch在执行cuda计算时会使用gpgu-sim。
-8. 备注：
+9. 测试
+```shell
+# 把配置文件放在同一文件夹下
+python ./test_cnn.py > gpgpusim.log
+```
+10. 备注：
 由于该pytorch版本较老，直接跑一些较复杂神经网络会触发各种问题（尤其从外界读取数据，建议先随机在python中设置数据）
