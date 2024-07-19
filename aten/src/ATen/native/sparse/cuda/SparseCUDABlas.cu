@@ -7,7 +7,7 @@
 // modified by KevinWu@2024
 //#include <THCUNN/ll_cusparse.h>
 #include <cusparse.h>
-#include "/home/sim/pytorch-gpgpu-sim/aten/src/THCUNN/ll_cusparse.h"
+#include "ll_cusparse.h"
 
 namespace at { namespace native { namespace sparse { namespace cuda {
 
@@ -62,7 +62,7 @@ std::string cusparseGetErrorString(cusparseStatus_t status) {
 inline void CUSPARSE_CHECK(cusparseStatus_t status)
 {
   if (status != CUSPARSE_STATUS_SUCCESS) {
-    AT_ERROR("cusparse runtime error: ", cusparseGetErrorString(status));
+    AT_ERROR("cusparse runtime error: ", at::native::sparse::cuda::cusparseGetErrorString(status));
   }
 }
 
