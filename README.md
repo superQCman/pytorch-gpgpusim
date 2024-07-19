@@ -30,7 +30,7 @@ make -j4
 ```shell
 ldd $PYTORCH_BIN
 ```
-若libcudart.so.10.1链接到gpgpu-sim中的libcudart.so.10.1，说明pytorch在执行cuda计算时会使用gpgu-sim。如果没有链接到gpgu-sim，重新执行第6步。
+若libcudart.so.10.1链接到gpgpu-sim中的libcudart.so.10.1，说明pytorch在执行cuda计算时会使用gpgu-sim。如果没有链接到gpgu-sim，重新执行第5步。
 
 7. 测试
 ```shell
