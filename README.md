@@ -8,7 +8,7 @@ conda env create -n gpgpu-sim -f ./env.yaml # 3.8可能不兼容的问题更大�
 ```
 4. 启动编译pytorch-gpgpusim
 ```shell
-source set_env.sh #这里最好检查一下路径存在且没问题，确保
+source set_env.sh #这里最好检查一下路径存在且没问题，确保路径一致
 python setup.py install
 export PYTORCH_BIN=<pytorch directory>/torch/lib/libcaffe2_gpu.so #anaconda 中的位置
 ```
