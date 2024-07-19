@@ -33,4 +33,5 @@ python ./test_cnn.py > gpgpusim.log
 10. 备注：
 
 **由于该pytorch版本较老，直接跑一些较复杂神经网络会触发各种问题（建议不要调用较新的库，极有可能不兼容）**
+
 **补充：现在初步推断torchvision可能会触发问题，建议暂时先不使用torchvision**
