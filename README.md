@@ -9,6 +9,7 @@ conda activate gpgpu-sim
 ```
 4. 启动编译pytorch-gpgpusim
 ```shell
+git -c submodule."third_party/nervanagpu".update=none submodule update --init # 加载子模块
 source set_env.sh # 添加路径，这里最好检查一下路径存在且没问题，确保路径一致
 python setup.py install
 export PYTORCH_BIN=<pytorch directory>/torch/lib/libcaffe2_gpu.so # Anaconda 中libcaffe2_gpu.so的位置
