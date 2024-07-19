@@ -28,4 +28,4 @@ ldd $PYTORCH_BIN
 python ./test_cnn.py > gpgpusim.log
 ```
 10. 备注：
-由于该pytorch版本较老，直接跑一些较复杂神经网络会触发各种问题（尤其从外界读取数据，建议先随机在python中设置数据）
+由于该pytorch版本较老，直接跑一些较复杂神经网络会触发各种问题（建议不要调用较新的库，极有可能不兼容）
