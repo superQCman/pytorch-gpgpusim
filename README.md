@@ -1,10 +1,10 @@
 # pytorch-gpgpusim 安装指引
 
 1. 安装cuda 10.1版本（推荐）
-2. 创建Anaconda虚拟环境（python 3.8）
+2. 创建Anaconda虚拟环境（python 3.8或2.7）
 ```shell
 cd pytorch-gpgpusim
-conda env create -n gpgpu-sim -f ./env.yaml
+conda env create -n gpgpu-sim -f ./env.yaml # 3.8可能不兼容的问题更大，如果用3.8遇到killed，建议换成2.7 （./env_2.7.yaml）
 ```
 4. 启动编译pytorch-gpgpusim
 ```shell
