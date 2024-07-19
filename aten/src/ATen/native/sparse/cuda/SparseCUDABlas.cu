@@ -4,12 +4,17 @@
 
 #include <TH/THGeneral.h>
 
+// modified by KevinWu@2024
+//#include <THCUNN/ll_cusparse.h>
 #include <cusparse.h>
+#include "/home/sim/pytorch-gpgpu-sim/aten/src/THCUNN/ll_cusparse.h"
 
 namespace at { namespace native { namespace sparse { namespace cuda {
 
 #ifndef __HIP_PLATFORM_HCC__
 
+// modified by KevinWu, ignore the error: more than one instance of function
+// #if 0
 std::string cusparseGetErrorString(cusparseStatus_t status) {
   switch(status)
   {
@@ -51,6 +56,8 @@ std::string cusparseGetErrorString(cusparseStatus_t status) {
       }
   }
 }
+// #endif
+
 
 inline void CUSPARSE_CHECK(cusparseStatus_t status)
 {

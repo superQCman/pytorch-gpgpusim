@@ -1,7 +1,7 @@
 #ifndef THC_GENERIC_FILE
 #define THC_GENERIC_FILE "generic/SparseLinear.cu"
 #else
-
+#include "../ll_cusparse.h"
 static bool THNN_(checkInput)(THCTensor* t)
 {
   return !t->is_empty() && t->_dim() == 2 && t->size[1] == 3;

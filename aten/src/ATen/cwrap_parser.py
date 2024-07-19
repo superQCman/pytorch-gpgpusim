@@ -15,7 +15,7 @@ def parse(filename):
                 in_declaration = True
             elif line == ']]':
                 in_declaration = False
-                declaration = yaml.load('\n'.join(declaration_lines))
+                declaration = yaml.safe_load('\n'.join(declaration_lines))
                 declarations.append(declaration)
             elif in_declaration:
                 declaration_lines.append(line)

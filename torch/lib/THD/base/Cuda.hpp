@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef USE_CUDA
+// #ifdef USE_CUDA
 #include <THC/THC.h>
 #include "Cuda.h"
 
@@ -11,4 +11,4 @@ inline THCState* THDGetCudaState() {
 }
 
 int THDGetStreamId(cudaStream_t stream);
-#endif
+// #endif

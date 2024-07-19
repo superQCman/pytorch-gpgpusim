@@ -78,6 +78,7 @@ option(USE_ATEN "Use ATen" OFF)
 option(USE_CUDA "Use CUDA" ON)
 option(USE_ROCM "Use ROCm" OFF)
 option(CAFFE2_STATIC_LINK_CUDA "Statically link CUDA libraries" OFF)
+
 cmake_dependent_option(
     USE_CUDNN "Use cuDNN" ON
     "USE_CUDA" OFF)

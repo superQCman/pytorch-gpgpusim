@@ -97,6 +97,8 @@ static inline __device__ void atomicAdd(int64_t *address, int64_t val) {
 }
 
 #ifdef CUDA_HALF_TENSOR
+// added by KevinWu@2024, fix the error of data define: half
+#if !(__CUDA_ARCH__ >= 700 || !defined(__CUDA_ARCH__) )
 static inline  __device__ void atomicAdd(half *address, half val) {
   unsigned int * address_as_ui =
     (unsigned int *) ((char *)address - ((size_t)address & 2));
@@ -123,6 +125,10 @@ static inline __device__ void atomicAdd(at::Half *address, half val) {
   return atomicAdd(reinterpret_cast<half*>(address), val);
 }
 #endif
+
+// added by KevinWu
+#endif
+
 
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600 || CUDA_VERSION < 8000)
 // from CUDA C Programmic Guide
