@@ -4,7 +4,7 @@
 2. 创建Anaconda虚拟环境（python 3.8或2.7）
 ```shell
 cd pytorch-gpgpusim
-conda env create -n gpgpu-sim -f ./env.yaml # 3.8可能不兼容的问题更大，如果用3.8遇到killed，建议换成2.7 （./env_2.7.yaml）
+conda env create -n gpgpu-sim -f ./env.yaml # 3.8可能不兼容的问题更大，如果用3.8遇到进程被killed，建议换成2.7 （./env_2.7.yaml）
 ```
 4. 启动编译pytorch-gpgpusim
 ```shell
