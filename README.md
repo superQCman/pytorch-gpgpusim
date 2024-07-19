@@ -27,6 +27,7 @@ ldd $PYTORCH_BIN
 9. 测试
 ```shell
 # 先把配置文件放在同一文件夹下，再执行python脚本
+cd pytorch-gpgpusim
 python ./test_cnn.py > gpgpusim.log
 ```
 
