@@ -1,6 +1,6 @@
 export LD_LIBRARY_PATH="/usr/local/cuda/lib64/:$LD_LIBRARY_PATH"
 #	:/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH"
-export CUDNN_INCLUDE_DIR="/usr/include/x86_64-linux-gnu/"
+export CUDNN_INCLUDE_DIR="/usr/local/cuda-10.1/targets/x86_64-linux/include"
 # export CUDNN_LIBRARY="/usr/lib/x86_64-linux-gnu/"
 # export CUDNN_LIBRARY=""
 export TORCH_CUDA_ARCH_LIST="6.1+PTX"
