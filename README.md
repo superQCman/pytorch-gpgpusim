@@ -4,7 +4,7 @@
 2. 创建Anaconda虚拟环境（python 3.6或2.7）
 ```shell
 cd pytorch-gpgpusim
-conda create -n gpgpu-sim python=2.7 
+conda create -n gpgpu-sim python=3.6
 conda activate gpgpu-sim
 pip install pyyaml
 ```
