@@ -34,8 +34,8 @@ ldd $PYTORCH_BIN
 
 7. 测试
 ```shell
+# 在pytorch-gpgpusim文件夹外创建一个新文件夹，将test_cnn.py放到新文件夹中（在pytorch-gpgusim目录下运行会报错）
 # 先把配置文件放在同一文件夹下，再执行python脚本
-cd pytorch-gpgpusim
 python ./test_cnn.py > gpgpusim.log
 ```
 
