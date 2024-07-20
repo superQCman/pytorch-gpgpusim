@@ -17,7 +17,7 @@ export PYTORCH_BIN=<pytorch directory>/torch/lib/libcaffe2_gpu.so # Anaconda 中
 ```
 4. 安装torchvision
 ```shell
-pip install torchvision==0.2.2
+pip install torchvision==0.2.2 # 使用torchvision获取数据建议先提前下载下来再运行（版本较老直接运行可能找不到数据）
 ```
 5. 重新编译gpgpusim
 ```shell
