@@ -4,9 +4,9 @@
 2. 创建Anaconda虚拟环境（python 3.6或2.7）
 ```shell
 cd pytorch-gpgpusim
-conda create -n gpgpu-sim python=3.6
+conda create -n gpgpu-sim python=3.6 # 推荐使用3.6
 conda activate gpgpu-sim
-pip install pyyaml
+pip install pyyaml numpy
 ```
 3. 启动编译pytorch-gpgpusim
 ```shell
@@ -44,4 +44,4 @@ python ./test_cnn.py > gpgpusim.log
 
 **由于该pytorch版本较老，直接跑一些较复杂神经网络会触发各种问题（建议不要调用较新的库，极有可能不兼容）**
 
-**补充：现在初步推断torchvision可能会触发问题，建议暂时先不使用torchvision**
+~~**补充：现在初步推断torchvision可能会触发问题，建议暂时先不使用torchvision**~~
