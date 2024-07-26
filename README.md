@@ -1,5 +1,20 @@
+[English](./README_en.md)
 # pytorch-gpgpusim 安装指引（矩阵相乘问题已解决，涉及矩阵相乘正向传播模块可以运行，由于反向传播需要矩阵和向量相乘，暂时还会报错）
 
+已修改部分：
+  1. 重新实现矩阵相乘
+  https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L230
+  2. 原本参数传递顺序有问题，修改成正确形式
+  https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L257
+
+存在问题部分（功能是向量和矩阵相乘）：
+  https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L107
+  修改方案：
+    1. 打印出传入参数，这个版本参数传递很可能是错的
+    2. 重新实现矩阵和向量相乘（使用cuda底层代码很可能报错，且问题难以找到）
+    3. 每次运行脚本以及重新编译时间开销较大，希望有能力的能共同解决
+
+## 安装步骤
 1. 安装**cuda 10.1**版本（推荐）和 cuDNN （最高版本**v7.6.5**）
 2. 创建Anaconda虚拟环境（python 3.6或2.7）
 ```shell
@@ -35,9 +50,8 @@ ldd $PYTORCH_BIN
 
 7. 测试
 ```shell
-# 在pytorch-gpgpusim文件夹外创建一个新文件夹，将test_cnn.py放到新文件夹中（在pytorch-gpgusim目录下运行会报错）
-# 先把配置文件放在同一文件夹下，再执行python脚本
-python ./test_cnn.py > gpgpusim.log
+cd ./benchmarks
+make run-main
 ```
 
 8. 备注：
