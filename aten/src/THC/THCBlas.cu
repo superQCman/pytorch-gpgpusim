@@ -454,10 +454,43 @@ void THCudaBlas_SgemmBatched(THCState *state, char transa, char transb, int64_t 
                                    &alpha, a, (int)lda, b, (int)ldb, &beta, c, (int)ldc,
                                    (int)batchCount));
 }
+//qc added
+__global__ void customMatrixMulKernelBatch(const float *A, const float *B, float *C, int m, int n, int k, float alpha, float beta, cublasOperation_t transA, cublasOperation_t transB, int lda, int ldb, int ldc) {
+    int batchIndex = blockIdx.z;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
 
+    if (row < m && col < n) {
+        float sum = 0.0f;
+        const float *aStart = A + batchIndex * m*k;
+        const float *bStart = B + batchIndex * k*n;
+        float *cStart = C + batchIndex * m*n;
+
+        for (int e = 0; e < k; ++e) {
+            int idxA = (transA == CUBLAS_OP_N) ? (row * lda + e) : (e * lda + row);
+            int idxB = (transB == CUBLAS_OP_N) ? (e * ldb + col) : (col * ldb + e);
+            sum += aStart[idxA] * bStart[idxB];
+        }
+        cStart[row * ldc + col] = alpha * sum + beta * cStart[row * ldc + col];
+    }
+}
+//qc added
+extern "C" void customGpuMatrixMultiplyBatch(THCState *state, int m, int n, int k,float alpha,const float *A, int lda, const float *B, int ldb, float *C, int ldc, float beta, int64_t batchCount,cublasOperation_t transA, cublasOperation_t transB) {
+    dim3 threadsPerBlock(16, 16);
+    dim3 numBlocks(
+      (n + threadsPerBlock.x - 1) / threadsPerBlock.x, 
+      (m + threadsPerBlock.y - 1) / threadsPerBlock.y, 
+    batchCount);
+    lda=k;ldb=n;ldc=n;
+    printf("---------test4------------");
+    cudaStream_t stream = THCState_getCurrentStream(state);
+    customMatrixMulKernelBatch<<<numBlocks, threadsPerBlock, 0, stream>>>(A, B, C, m, n, k, alpha, beta, transA, transB, lda, ldb, ldc);
+    cudaStreamSynchronize(stream);
+
+}
 #if CUDA_VERSION >= 8000
-void THCudaBlas_SgemmStridedBatched(THCState *state, char transa, char transb, int64_t m, int64_t n, int64_t k,
-                             float alpha, const float *a, int64_t lda, int64_t strideA, const float *b, int64_t ldb, int64_t strideB,
+void THCudaBlas_SgemmStridedBatched(THCState *state, char transa, char transb, int64_t n, int64_t m, int64_t k,
+                             float alpha, const float *b, int64_t ldb, int64_t strideB, const float *a, int64_t lda, int64_t strideA, 
                              float beta, float *c, int64_t ldc, int64_t strideC, int64_t batchCount)
 {
   if( (m >= INT_MAX) || (n >= INT_MAX) || (k >= INT_MAX) || (lda >= INT_MAX)  || (ldb >= INT_MAX) || (ldc >= INT_MAX) || (batchCount >= INT_MAX) )
@@ -466,17 +499,29 @@ void THCudaBlas_SgemmStridedBatched(THCState *state, char transa, char transb, i
     THError("Cublas_SgemmStridedBatched only supports m, n, k, lda, ldb, ldc, batchCount"
             "with the bound [val] <= %d", INT_MAX);
   }
-
+  printf("THCudaBlas_SgemmStridedBatched called with the following parameters:\n");
+  printf("transa: %c, transb: %c\n", transa, transb);
+  printf("Dimensions: m=%ld, n=%ld, k=%ld\n", m, n, k);
+  printf("Scalars: alpha=%f, beta=%f\n", alpha, beta);
+  printf("Leading dimensions: lda=%ld, ldb=%ld, ldc=%ld\n", lda, ldb, ldc);
+  printf("stride:strideA:%ld, strideB:%ld, strideC:%ld\n",strideA,strideB,strideC);
+  printf("batchCount: %ld",batchCount);
+  float first_element;
+  cudaMemcpy(&first_element, a, sizeof(float), cudaMemcpyDeviceToHost);
+  printf("First element of a: %f\n", first_element);
+  cudaMemcpy(&first_element, b, sizeof(float), cudaMemcpyDeviceToHost);
+  printf("First element of b: %f\n", first_element);
   adjustLd(transa, transb, m, n, k, &lda, &ldb, &ldc);
   cublasOperation_t opa = convertTransToCublasOperation(transa);
   cublasOperation_t opb = convertTransToCublasOperation(transb);
 
   cublasHandle_t handle = THCState_getCurrentBlasHandle(state);
   cublasSetStream(handle, THCState_getCurrentStream(state));
-  THCublasCheck(cublasSgemmStridedBatched(handle,
-                                   opa, opb, (int)m, (int)n, (int)k,
-                                   &alpha, a, (int)lda, strideA, b, (int)ldb, strideB, &beta, c, (int)ldc, strideC,
-                                   (int)batchCount));
+  customGpuMatrixMultiplyBatch(state, (int)m, (int)n, (int)k, alpha, a, (int)lda, b, (int)ldb, c, (int)ldc, beta, (int)batchCount,opa,opb);
+  // THCublasCheck(cublasSgemmStridedBatched(handle,
+  //                                  opa, opb, (int)m, (int)n, (int)k,
+  //                                  &alpha, a, (int)lda, strideA, b, (int)ldb, strideB, &beta, c, (int)ldc, strideC,
+  //                                  (int)batchCount));
 }
 #endif
 
@@ -489,7 +534,7 @@ void THCudaBlas_DgemmBatched(THCState *state, char transa, char transb, int64_t 
     THError("Cublas_DgemmBatched only supports m, n, k, lda, ldb, ldc, batchCount"
             "with the bound [val] <= %d", INT_MAX);
   }
-
+  
   adjustLd(transa, transb, m, n, k, &lda, &ldb, &ldc);
   cublasOperation_t opa = convertTransToCublasOperation(transa);
   cublasOperation_t opb = convertTransToCublasOperation(transb);

@@ -492,6 +492,43 @@ THC_API void
 THCTensor_(baddbmm)(THCState *state, THCTensor *result, real beta, THCTensor *t,
                     real alpha, THCTensor *batch1, THCTensor *batch2) {
 #if defined(THC_REAL_IS_HALF) || defined(THC_REAL_IS_FLOAT) || defined(THC_REAL_IS_DOUBLE)
+// 假设您已经有了类似 THCTensor_(size) 的函数来获取特定维度的尺寸
+int64_t num_elements = THCTensor_(nElement)(state, batch1);
+real* batch1_data = THCTensor_(data)(state, batch1);
+int64_t size0_batch1 = THCTensor_(size)(state, batch1, 0);  // 获取第一维尺寸
+int64_t size1_batch1 = THCTensor_(size)(state, batch1, 1);  // 获取第二维尺寸
+int64_t size2_batch1 = THCTensor_(size)(state, batch1, 2);  // 获取第三维尺寸
+
+
+printf("Number of elements in batch1: %lld\n", num_elements);
+printf("Size of batch1: %lld x %lld x %lld\n", size0_batch1, size1_batch1,size2_batch1);  // 打印尺寸
+
+// 如果 batch1 不为空且有数据，打印第一个元素
+if (num_elements > 0 && batch1_data != NULL) {
+    real first_element;
+    cudaMemcpy(&first_element, batch1_data, sizeof(real), cudaMemcpyDeviceToHost);
+    printf("First element of batch1: %f\n", first_element);
+} else {
+    printf("batch1 is empty or has no data\n");
+}
+
+num_elements = THCTensor_(nElement)(state, batch2);
+real* batch2_data = THCTensor_(data)(state, batch2);
+int64_t size0_batch2 = THCTensor_(size)(state, batch2, 0);  // 获取第一维尺寸
+int64_t size1_batch2 = THCTensor_(size)(state, batch2, 1);  // 获取第二维尺寸
+int64_t size2_batch2 = THCTensor_(size)(state, batch2, 2);  // 获取第三维尺寸
+printf("Number of elements in batch2: %lld\n", num_elements);
+printf("Size of batch2: %lld x %lld x %lld\n", size0_batch2, size1_batch2,size2_batch2);  // 打印尺寸
+
+// 如果 batch2 不为空且有数据，打印第一个元素
+if (num_elements > 0 && batch2_data != NULL) {
+    real first_element;
+    cudaMemcpy(&first_element, batch2_data, sizeof(real), cudaMemcpyDeviceToHost);
+    printf("First element of batch2: %f\n", first_element);
+} else {
+    printf("batch2 is empty or has no data\n");
+}
+
   THCAssertSameGPU(THCTensor_(checkGPU)(state, 4, result, t, batch1, batch2));
   THArgCheck(THCTensor_(_nDimension)(state, t) == 3, 4, "expected 3D tensor");
   THArgCheck(THCTensor_(_nDimension)(state, batch1) == 3, 6, "expected 3D tensor");
