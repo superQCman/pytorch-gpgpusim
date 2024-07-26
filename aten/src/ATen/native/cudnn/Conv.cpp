@@ -739,6 +739,9 @@ void cudnn_convolution_add_bias_(CheckedFrom c, const TensorArg& output, const T
 
   // See Note [CuDNN broadcast padding].  Handle the left padding
   // ourselves, but use TensorDescriptor's padding argument to do the rest.
+  std::cout << "cudnn_convolution_add_bias_ called with:" << std::endl;
+  std::cout << "  Output: " << output->sizes() << std::endl;
+  std::cout << "  Bias: " << bias->sizes() << std::endl;
   TensorDescriptor bdesc, odesc;
   bdesc.set(bias->expand({1, bias->size(0)}), output->dim());
   odesc.set(*output);
@@ -835,7 +838,15 @@ Tensor cudnn_convolution_forward(
 {
   checkAllSameType(c, {input, weight});
   checkAllSameGPU(c, {input, weight});
-
+  std::cout << "cudnn_convolution_forward called with:" << std::endl;
+  std::cout << "  Input: " << input->sizes() << std::endl;
+  std::cout << "  Weight: " << weight->sizes() << std::endl;
+  std::cout << "  Padding: " << padding << std::endl;
+  std::cout << "  Stride: " << stride << std::endl;
+  std::cout << "  Dilation: " << dilation << std::endl;
+  std::cout << "  Groups: " << groups << std::endl;
+  std::cout << "  Benchmark: " << benchmark << std::endl;
+  std::cout << "  Deterministic: " << deterministic << std::endl;
   auto output_t = input->type().tensor(
                     conv_output_size(input->sizes(), weight->sizes(),
                                      padding, stride, dilation, groups));
@@ -874,6 +885,18 @@ Tensor cudnn_convolution(
             bias   { bias_t,   "bias",   3 };
   setCuDNNStreamToCurrent();
   CheckedFrom c = "cudnn_convolution";
+    std::cout << "cudnn_convolution called with:" << std::endl;
+  std::cout << "  Input: " << input->sizes() << std::endl;
+  std::cout << "  Weight: " << weight->sizes() << std::endl;
+  if (bias->defined()) {
+    std::cout << "  Bias: " << bias->sizes() << std::endl;
+  }
+  std::cout << "  Padding: " << padding << std::endl;
+  std::cout << "  Stride: " << stride << std::endl;
+  std::cout << "  Dilation: " << dilation << std::endl;
+  std::cout << "  Groups: " << groups << std::endl;
+  std::cout << "  Benchmark: " << benchmark << std::endl;
+  std::cout << "  Deterministic: " << deterministic << std::endl;
   auto output_t = cudnn_convolution_forward(
     c, input, weight, padding, stride, dilation, groups, benchmark, deterministic);
   if (bias->defined()) {

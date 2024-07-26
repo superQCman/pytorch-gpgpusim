@@ -231,6 +231,37 @@ THCTensor_(addr)(THCState *state, THCTensor *r_, real beta, THCTensor *t, real a
 THC_API void
 THCTensor_(addmm)(THCState *state, THCTensor *r_, real beta, THCTensor *t, real alpha, THCTensor *m1, THCTensor *m2)
 {
+  // 检查 m1 是否为空
+    int64_t num_elements = THCTensor_(nElement)(state, m1);
+    real* m1_data = THCTensor_(data)(state, m1);
+
+    printf("Number of elements in m1: %lld\n", num_elements);
+
+    // 如果 m1 不为空且有数据，打印第一个元素
+    if (num_elements > 0 && m1_data != NULL) {
+        // 从 GPU 拷贝第一个元素到 CPU
+        real first_element;
+        cudaMemcpy(&first_element, m1_data, sizeof(real), cudaMemcpyDeviceToHost);
+        printf("First element of m1: %f\n", first_element);
+    } else {
+        printf("m1 is empty or has no data\n");
+    }
+
+    num_elements = THCTensor_(nElement)(state, m2);
+    real* m2_data = THCTensor_(data)(state, m2);
+
+    printf("Number of elements in m2: %lld\n", num_elements);
+
+    // 如果 m1 不为空且有数据，打印第一个元素
+    if (num_elements > 0 && m2_data != NULL) {
+        // 从 GPU 拷贝第一个元素到 CPU
+        real first_element;
+        cudaMemcpy(&first_element, m2_data, sizeof(real), cudaMemcpyDeviceToHost);
+        printf("First element of m2: %f\n", first_element);
+    } else {
+        printf("m2 is empty or has no data\n");
+    }
+
 #if defined(THC_REAL_IS_HALF) || defined(THC_REAL_IS_FLOAT) || defined(THC_REAL_IS_DOUBLE)
 
   THCAssertSameGPU(THCTensor_(checkGPU)(state, 4, r_, t, m1, m2));

@@ -227,31 +227,99 @@ void adjustLd(char transa, char transb, int64_t m, int64_t n, int64_t k, int64_t
       *ldb = k;
   }
 }
-
-/* Level 3 */
-void THCudaBlas_Sgemm(THCState *state, char transa, char transb, int64_t m, int64_t n, int64_t k, float alpha, float *a, int64_t lda, float *b, int64_t ldb, float beta, float *c, int64_t ldc)
-{
-  adjustLd(transa, transb, m, n, k, &lda, &ldb, &ldc);
-  cublasOperation_t opa = convertTransToCublasOperation(transa);
-  cublasOperation_t opb = convertTransToCublasOperation(transb);
-
-  if( (m <= INT_MAX) && (n <= INT_MAX) && (k <= INT_MAX) && (lda <= INT_MAX)  && (ldb <= INT_MAX) && (ldc <= INT_MAX) )
-  {
-    int i_m = (int)m;
-    int i_n = (int)n;
-    int i_k = (int)k;
-    int i_lda = (int)lda;
-    int i_ldb = (int)ldb;
-    int i_ldc = (int)ldc;
-
-    cublasHandle_t handle = THCState_getCurrentBlasHandle(state);
-    cublasSetStream(handle, THCState_getCurrentStream(state));
-    THCublasCheck(cublasSgemm(handle, opa, opb, i_m, i_n, i_k, &alpha, a, i_lda, b, i_ldb, &beta, c, i_ldc));
-    return;
-  }
-  THError("Cublas_Sgemm only supports m, n, k, lda, ldb, ldc"
-          "with the bound [val] <= %d", INT_MAX);
+//qc added
+__global__ void customMatrixMulKernel(float *A, float *B, float *C, int m, int n, int k, float alpha, float beta, cublasOperation_t transA, cublasOperation_t transB, int lda, int ldb, int ldc) {
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    if (row < m && col < n) {
+        float sum = 0.0f;
+        for (int e = 0; e < k; ++e) {
+            int idxA = (transA == CUBLAS_OP_N) ? (row * lda + e) : (e * lda + row);
+            int idxB = (transB == CUBLAS_OP_N) ? (e * ldb + col) : (col * ldb + e);
+            sum += A[idxA] * B[idxB];
+        }
+        C[row * ldc + col] = alpha * sum + beta * C[row * ldc + col];
+    }
 }
+
+//qc added
+extern "C" void customGpuMatrixMultiply(THCState *state, float *A, float *B, float *C, int m, int n, int k, float alpha, float beta, cublasOperation_t transA, cublasOperation_t transB, int lda, int ldb, int ldc) {
+
+    dim3 threadsPerBlock(16, 16);
+    dim3 numBlocks((m + 15) / 16, (n + 15) / 16);
+    printf("---------test3------------");
+    cudaStream_t stream = THCState_getCurrentStream(state);
+    customMatrixMulKernel<<<numBlocks, threadsPerBlock, 0, stream>>>(A, B, C, m, n, k, alpha, beta, transA, transB, lda, ldb, ldc);
+    cudaStreamSynchronize(stream);
+
+}
+/* Level 3 */ //qc added
+void THCudaBlas_Sgemm(THCState *state, char transa, char transb, int64_t n, int64_t m,int64_t k,  float alpha, float *b, int64_t ldb, float *a, int64_t lda, float beta, float *c, int64_t ldc) {
+    if (!a || !b || !c) {
+      fprintf(stderr, "Error: One of the input matrices is NULL.\n");
+      return;  
+    }
+    adjustLd(transa, transb, m, n, k, &lda, &ldb, &ldc);
+    cublasOperation_t opa = convertTransToCublasOperation(transa);
+    cublasOperation_t opb = convertTransToCublasOperation(transb);
+    printf("THCudaBlas_Sgemm called with the following parameters:\n");
+    printf("transa: %c, transb: %c\n", transa, transb);
+    printf("Dimensions: m=%ld, n=%ld, k=%ld\n", m, n, k);
+    printf("Scalars: alpha=%f, beta=%f\n", alpha, beta);
+    printf("Leading dimensions: lda=%ld, ldb=%ld, ldc=%ld\n", lda, ldb, ldc);
+    float first_element;
+    cudaMemcpy(&first_element, a, sizeof(float), cudaMemcpyDeviceToHost);
+    printf("First element of a: %f\n", first_element);
+    cudaMemcpy(&first_element, b, sizeof(float), cudaMemcpyDeviceToHost);
+    printf("First element of b: %f\n", first_element);
+    // printMatrix("A", a, m, k, lda);
+    // printMatrix("B", b, k, n, ldb);
+    if( (m <= INT_MAX) && (n <= INT_MAX) && (k <= INT_MAX) && (lda <= INT_MAX) && (ldb <= INT_MAX) && (ldc <= INT_MAX) ) {
+        int i_m = (int)m;
+        int i_n = (int)n;
+        int i_k = (int)k;
+        int i_lda = (int)lda;
+        int i_ldb = (int)ldb;
+        int i_ldc = (int)ldc;
+
+        customGpuMatrixMultiply(state, a, b, c, i_m, i_n, i_k, alpha, beta, opa, opb, i_lda, i_ldb, i_ldc);
+        return;
+    }
+    THError("Cublas_Sgemm only supports m, n, k, lda, ldb, ldc with the bound [val] <= %d", INT_MAX);
+}
+
+// void THCudaBlas_Sgemm(THCState *state, char transa, char transb, int64_t n, int64_t m,int64_t k,  float alpha, float *b, int64_t ldb, float *a, int64_t lda, float beta, float *c, int64_t ldc)
+// {
+//   adjustLd(transa, transb, m, n, k, &lda, &ldb, &ldc);
+//   cublasOperation_t opa = convertTransToCublasOperation(transa);
+//   cublasOperation_t opb = convertTransToCublasOperation(transb);
+//   printf("THCudaBlas_Sgemm called with the following parameters:\n");
+//   printf("transa: %c, transb: %c\n", transa, transb);
+//   printf("Dimensions: m=%ld, n=%ld, k=%ld\n", m, n, k);
+//   printf("Scalars: alpha=%f, beta=%f\n", alpha, beta);
+//   printf("Leading dimensions: lda=%ld, ldb=%ld, ldc=%ld\n", lda, ldb, ldc);
+//   float first_element;
+//   cudaMemcpy(&first_element, a, sizeof(float), cudaMemcpyDeviceToHost);
+//   printf("First element of a: %f\n", first_element);
+//   cudaMemcpy(&first_element, b, sizeof(float), cudaMemcpyDeviceToHost);
+//   printf("First element of b: %f\n", first_element);
+//   if( (m <= INT_MAX) && (n <= INT_MAX) && (k <= INT_MAX) && (lda <= INT_MAX)  && (ldb <= INT_MAX) && (ldc <= INT_MAX) )
+//   {
+//     int i_m = (int)m;
+//     int i_n = (int)n;
+//     int i_k = (int)k;
+//     int i_lda = (int)lda;
+//     int i_ldb = (int)ldb;
+//     int i_ldc = (int)ldc;
+
+//     cublasHandle_t handle = THCState_getCurrentBlasHandle(state);
+//     cublasSetStream(handle, THCState_getCurrentStream(state));
+//     THCublasCheck(cublasSgemm(handle, opa, opb, i_m, i_n, i_k, &alpha, a, i_lda, b, i_ldb, &beta, c, i_ldc));
+//     return;
+//   }
+//   THError("Cublas_Sgemm only supports m, n, k, lda, ldb, ldc"
+//           "with the bound [val] <= %d", INT_MAX);
+// }
 
 #ifdef CUDA_HALF_TENSOR
 // In CUDA 8.0, definition of data types for sgemmex changed
