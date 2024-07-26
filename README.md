@@ -6,6 +6,7 @@
   https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L230
   2. 原本参数传递顺序有问题，修改成正确形式
   https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L257
+  3. [重新实现batch矩阵相乘](https://github.com/superQCman/pytorch-gpgpusim/blob/84d7413cf73c2a2604065adbf7118b729fe82123/aten/src/THC/THCBlas.cu#L457C1-L526C7)
 
 存在问题部分（功能是向量和矩阵相乘）：
   https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L107
