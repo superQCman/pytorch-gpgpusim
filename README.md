@@ -1,5 +1,8 @@
 # pytorch-gpgpusim 安装指引（矩阵相乘问题已解决，涉及矩阵相乘正向传播模块可以运行，由于反向传播需要矩阵和向量相乘，暂时还会报错）
 
+修改代码部分：
+https://github.com/superQCman/pytorch-gpgpusim/blob/de3ce84ce8178e88cc87fea96e4b10661df4cf0d/aten/src/THC/THCBlas.cu#L230
+
 1. 安装**cuda 10.1**版本（推荐）和 cuDNN （最高版本**v7.6.5**）
 2. 创建Anaconda虚拟环境（python 3.6或2.7）
 ```shell
